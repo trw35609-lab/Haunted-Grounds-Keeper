@@ -620,11 +620,21 @@ function killEnemy(e){
 /* =====================================================================
    PICKUPS / PARTICLES / PROJECTILES
    ===================================================================== */
-const candyGeo=new THREE.OctahedronGeometry(.32),heartGeo=new THREE.SphereGeometry(.26,6,5);
+const heartGeo=new THREE.SphereGeometry(.26,6,5);
+// wrapped candy: pink body + white band + wrapper twists on both ends (like the 🍬 on the title screen)
+const candyBodyGeo=new THREE.SphereGeometry(.28,8,6),candyBodyMat=mat(0xff5ea8,{emissive:0xc21f6e,emissiveIntensity:.85});
+const candyBandGeo=new THREE.CylinderGeometry(.295,.295,.12,8),candyBandMat=mat(0xfff0f7,{emissive:0xb08898,emissiveIntensity:.5});
+const candyTwistGeo=new THREE.ConeGeometry(.16,.32,6),candyTwistMat=mat(0xffa8d0,{emissive:0x99406f,emissiveIntensity:.6});
 function spawnCandy(pos){
   if(world.pickups.filter(p=>p.kind==='candy').length>18)return;
-  const m=new THREE.Mesh(candyGeo,mat(0xff5ea8,{emissive:0xc21f6e,emissiveIntensity:.9}));
-  const g=new THREE.Group();g.add(m);
+  const g=new THREE.Group();
+  const c=new THREE.Group(); // the spinning candy itself
+  const body=new THREE.Mesh(candyBodyGeo,candyBodyMat);body.scale.set(1.3,1,1);c.add(body);
+  const band=new THREE.Mesh(candyBandGeo,candyBandMat);band.rotation.z=Math.PI/2;c.add(band);
+  const t1=new THREE.Mesh(candyTwistGeo,candyTwistMat);t1.rotation.z=-Math.PI/2;t1.position.x=.46;c.add(t1);
+  const t2=new THREE.Mesh(candyTwistGeo,candyTwistMat);t2.rotation.z=Math.PI/2;t2.position.x=-.46;c.add(t2);
+  c.rotation.z=rand(-.22,.22); // jaunty little tilt
+  g.add(c);
   const glow=new THREE.Sprite(new THREE.SpriteMaterial({map:TEX_GLOW,color:0xff7fc0,transparent:true,opacity:.45,depthWrite:false}));
   glow.scale.setScalar(1.8);g.add(glow);
   g.position.set(clamp(pos.x,-YARD,YARD),.6,clamp(pos.z,-YARD,YARD));scene.add(g);
